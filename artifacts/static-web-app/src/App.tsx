@@ -41,7 +41,7 @@ function Landing({ onEnter }: { onEnter: (role: 'student' | 'admin') => void }) 
   return <main className="landing">
     <header className="landing-header">
       <Brand />
-      <nav className="landing-nav"><span className="micro">Research prototype · RAC meeting demo</span><button className="outline-button" onClick={() => onEnter('admin')} data-testid="button-enter-admin"><LayoutDashboard size={15} /> Admin view</button></nav>
+      <nav className="landing-nav"><span className="micro">Research prototype</span><button className="outline-button" onClick={() => onEnter('admin')} data-testid="button-enter-admin"><LayoutDashboard size={15} /> Admin view</button></nav>
     </header>
     <section className="landing-main">
       <div className="landing-grid">
@@ -64,7 +64,7 @@ function Landing({ onEnter }: { onEnter: (role: 'student' | 'admin') => void }) 
         </div>
       </div>
     </section>
-    <footer className="landing-footer"><div className="landing-footer-researcher"><strong>Sharmin Shahnaz</strong><span>Reg. No. 24DEDUC010 · Ph.D. Research Scholar</span><span>Department of Education · Central University of Karnataka</span></div><span className="micro">RAC Demo · Education subject · Group C / Group D</span></footer>
+    <footer className="landing-footer"><div className="landing-footer-researcher"><strong>Sharmin Shahnaz</strong><span>Reg. No. 24DEDUC010 · Ph.D. Research Scholar</span><span>Department of Education · Central University of Karnataka</span></div><span className="micro">Education subject · Group C / Group D</span></footer>
   </main>;
 }
 
@@ -72,7 +72,7 @@ function Topbar({ onHome, onRole }: { onHome: () => void; onRole: (role: 'studen
   return <header className="topbar">
     <button className="brand" onClick={onHome} aria-label="Return to home"><span className="brand-mark" /><span className="brand-copy">3 Phasic Meta Learn</span></button>
     <div className="topbar-researcher"><span className="topbar-researcher-name">Sharmin Shahnaz</span><span className="micro">Reg. 24DEDUC010 · Dept. of Education · CUK</span></div>
-    <div className="topbar-actions"><span className="micro topbar-demo-note">RAC demo</span><button className="icon-button" onClick={() => onRole('admin')} aria-label="Open admin dashboard"><LayoutDashboard size={16} /></button><button className="icon-button" onClick={onHome} aria-label="Return to opening"><X size={16} /></button></div>
+    <div className="topbar-actions"><button className="icon-button" onClick={() => onRole('admin')} aria-label="Open admin dashboard"><LayoutDashboard size={16} /></button><button className="icon-button" onClick={onHome} aria-label="Return to opening"><X size={16} /></button></div>
   </header>;
 }
 
