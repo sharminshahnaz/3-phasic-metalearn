@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Static Web App"
+description = "A lightweight static web application with responsive HTML, CSS, and JavaScript interactions, designed as a polished starting point for a simple web experience."
+version = "1.0.0"
+id = "artifacts/static-web-app"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19484
+
+[services.development]
+run = "pnpm --filter @workspace/static-web-app run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/static-web-app", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/static-web-app/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19484"
+BASE_PATH = "/"
