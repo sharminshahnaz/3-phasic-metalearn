@@ -1,0 +1,1 @@
+- [Embedded resource previews](embedded-resource-previews.md) — external placeholder PDFs may block iframe embedding, so keep resource previews local unless a real asset is supplied.
