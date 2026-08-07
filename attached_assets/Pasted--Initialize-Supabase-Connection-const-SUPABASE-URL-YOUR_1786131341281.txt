@@ -1,0 +1,124 @@
+// Initialize Supabase Connection
+const SUPABASE_URL = "YOUR_SUPABASE_URL";
+const SUPABASE_KEY = "YOUR_SUPABASE_ANON_KEY";
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const video = document.getElementById('lessonVideo');
+let currentVideoNum = 1;
+
+// Trigger Flags to prevent repeat popups
+let t25 = false, t50 = false, t75 = false, t100 = false;
+
+// Sample PDF links
+const syllabusPDF = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
+let currentPptPDF = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
+
+// Real-time Event Listener for 25%, 50%, 75%, 100% video popups
+video.ontimeupdate = function() {
+  if (!video.duration) return;
+  let progress = (video.currentTime / video.duration) * 100;
+
+  if (progress >= 25 && !t25) {
+    t25 = true;
+    video.pause();
+    openModal('modal25');
+  } else if (progress >= 50 && !t50) {
+    t50 = true;
+    video.pause();
+    openModal('modal50');
+  } else if (progress >= 75 && !t75) {
+    t75 = true;
+    video.pause();
+    openModal('modal75');
+  } else if (progress >= 99 && !t100) {
+    t100 = true;
+    video.pause();
+    openModal('modal100');
+  }
+};
+
+function openModal(id) {
+  document.getElementById(id).style.display = 'flex';
+}
+
+function closeModal(id) {
+  document.getElementById(id).style.display = 'none';
+  video.play();
+}
+
+// Switch between Lesson 1 and Lesson 2
+function loadVideo(num) {
+  currentVideoNum = num;
+  resetTriggers();
+  
+  if (num === 1) {
+    document.getElementById('videoTitle').innerText = "Lesson 1: Introduction to Strategy Scaffolding";
+    document.getElementById('videoSource').src = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4";
+  } else {
+    document.getElementById('videoTitle').innerText = "Lesson 2: Applying Metacognitive Regulation";
+    document.getElementById('videoSource').src = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4";
+  }
+  
+  video.load();
+}
+
+function resetTriggers() {
+  t25 = false; t50 = false; t75 = false; t100 = false;
+}
+
+// Toggle between Syllabus and Lesson PPT in iframe
+function showPDF(type) {
+  const frame = document.getElementById('pdfFrame');
+  if (type === 'syllabus') {
+    frame.src = syllabusPDF;
+  } else {
+    frame.src = currentPptPDF;
+  }
+}
+
+// Save 75% Muddy Point Reflection to Supabase Database
+async function submitMuddyPoint() {
+  const text = document.getElementById('muddyText').value;
+  const selectedStrategy = document.getElementById('strategySelect').value;
+
+  await supabase.from('student_responses').insert([
+    {
+      student_id: 'demo_student_1',
+      video_number: currentVideoNum,
+      muddy_point: text,
+      strategy_selected: selectedStrategy
+    }
+  ]);
+
+  closeModal('modal75');
+}
+
+async function submitQuiz() {
+  closeModal('modal100');
+  alert('Lesson evaluation recorded successfully!');
+}
+
+function showHint() {
+  alert('Hint: Structure your notes into visual maps or link new ideas to familiar spatial locations.');
+}
+
+// Bilingual Switch (English / Bengali)
+function switchLanguage(lang) {
+  if (lang === 'BN') {
+    document.getElementById('plan-title').innerText = "পরিকল্পনা পর্যায়: কৌশল নির্বাচন করুন";
+    document.getElementById('lbl-strategy').innerText = "আপনার শিক্ষণ কৌশলটি বেছে নিন:";
+    document.getElementById('docs-title').innerText = "কোর্সের নথি ও সংস্থানসমূহ";
+    document.getElementById('m25-title').innerText = "২৫% অগ্রগতি: ফ্ল্যাশকার্ড";
+    document.getElementById('m50-title').innerText = "৫০% অগ্রগতি: পর্যবেক্ষণ জরিপ";
+    document.getElementById('m75-title').innerText = "৭৫% অগ্রগতি: অস্পষ্ট পয়েন্ট প্রতিফলন";
+    document.getElementById('m100-title').innerText = "১০০% সম্পূর্ণ: মূল্যায়ন ও কুইজ";
+  } else {
+    document.getElementById('plan-title').innerText = "Planning Phase: Select Strategy";
+    document.getElementById('lbl-strategy').innerText = "Choose your primary learning strategy:";
+    document.getElementById('docs-title').innerText = "Course Documents & Resources";
+    document.getElementById('m25-title').innerText = "25% Progress: Content Flashcard";
+    document.getElementById('m50-title').innerText = "50% Progress: Monitoring Survey";
+    document.getElementById('m75-title').innerText = "75% Progress: Muddy Point Reflection";
+    document.getElementById('m100-title').innerText = "100% Complete: Evaluation & Quiz";
+  }
+}

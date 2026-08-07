@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Metacognitive Research Platform</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Supabase JS Library -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <header>
+    <h1>Metacognitive Research Platform</h1>
+    <div class="lang-switch">
+      <button class="btn-lang" onclick="switchLanguage('EN')">English</button> | 
+      <button class="btn-lang" onclick="switchLanguage('BN')">বাংলা</button>
+    </div>
+  </header>
+
+  <main class="container">
+    
+    <!-- Lesson Selection -->
+    <section class="lesson-selector">
+      <h2>Select Lesson:</h2>
+      <button class="btn" onclick="loadVideo(1)">Lesson 1</button>
+      <button class="btn" onclick="loadVideo(2)">Lesson 2</button>
+    </section>
+
+    <!-- Planning Sheet (Before Video Starts) -->
+    <section class="planning-box">
+      <h3 id="plan-title">Planning Phase: Select Strategy</h3>
+      <label for="strategySelect" id="lbl-strategy">Choose your primary learning strategy:</label>
+      <select id="strategySelect">
+        <option value="Mnemonics">Mnemonics</option>
+        <option value="Method of Loci">Method of Loci</option>
+        <option value="Concept Mapping">Concept Mapping</option>
+        <option value="Feynman Technique">Feynman Technique</option>
+        <option value="Frayer Model">Frayer Model</option>
+        <option value="Chunking">Chunking</option>
+        <option value="Brain Dump">Brain Dump</option>
+      </select>
+      <button id="hintBtn" class="btn-secondary" onclick="showHint()">Give Hints</button>
+    </section>
+
+    <!-- Interactive Video Player -->
+    <section class="video-container">
+      <h2 id="videoTitle">Lesson 1: Introduction to Strategy Scaffolding</h2>
+      <video id="lessonVideo" controls width="100%">
+        <source id="videoSource" src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+    </section>
+
+    <!-- Embedded Documents Section (Syllabus & Lesson PPT PDFs) -->
+    <section class="documents-section">
+      <h3 id="docs-title">Course Documents & Resources</h3>
+      <div class="doc-tabs">
+        <button class="btn" onclick="showPDF('syllabus')">View Syllabus PDF</button>
+        <button class="btn" onclick="showPDF('ppt')">View Lesson PPT PDF</button>
+      </div>
+      <div class="pdf-viewer">
+        <iframe id="pdfFrame" src="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" width="100%" height="450px"></iframe>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- POPUP MODALS FOR VIDEO TIMESTAMPS -->
+
+  <!-- 25% Progress: Flashcards -->
+  <div id="modal25" class="modal">
+    <div class="modal-content">
+      <h3 id="m25-title">25% Progress: Content Flashcard</h3>
+      <p id="m25-body"><strong>Flashcard:</strong> What is Metacognitive Regulation?</p>
+      <p><em>It involves monitoring and controlling your cognitive processes during learning.</em></p>
+      <button class="btn" onclick="closeModal('modal25')">Continue Video</button>
+    </div>
+  </div>
+
+  <!-- 50% Progress: Monitoring Survey -->
+  <div id="modal50" class="modal">
+    <div class="modal-content">
+      <h3 id="m50-title">50% Progress: Monitoring Survey</h3>
+      <p id="m50-body">How well do you understand the material presented so far?</p>
+      <label><input type="radio" name="mon" value="High"> High Comprehension</label><br>
+      <label><input type="radio" name="mon" value="Medium"> Moderate Comprehension</label><br>
+      <label><input type="radio" name="mon" value="Low"> Struggling / Confused</label><br><br>
+      <button class="btn" onclick="closeModal('modal50')">Submit & Resume</button>
+    </div>
+  </div>
+
+  <!-- 75% Progress: Muddy Point Reflection -->
+  <div id="modal75" class="modal">
+    <div class="modal-content">
+      <h3 id="m75-title">75% Progress: Muddy Point Reflection</h3>
+      <p id="m75-body">What concept or part of this video is still unclear or confusing to you?</p>
+      <textarea id="muddyText" rows="3" style="width: 100%;" placeholder="Write your reflection here..."></textarea><br><br>
+      <button class="btn" onclick="submitMuddyPoint()">Submit Reflection</button>
+    </div>
+  </div>
+
+  <!-- 100% Progress: Quiz & Evaluation -->
+  <div id="modal100" class="modal">
+    <div class="modal-content">
+      <h3 id="m100-title">100% Complete: Evaluation & Quiz</h3>
+      <p id="m100-q1"><strong>Q1: Which technique relies on spatial memory journeys?</strong></p>
+      <label><input type="radio" name="quiz" value="A"> A) Concept Mapping</label><br>
+      <label><input type="radio" name="quiz" value="B"> B) Method of Loci</label><br>
+      <label><input type="radio" name="quiz" value="C"> C) Chunking</label><br><br>
+      <button class="btn" onclick="submitQuiz()">Complete Lesson</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
