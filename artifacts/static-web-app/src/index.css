@@ -184,9 +184,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .orbit-node { align-items: center; background: var(--deep-2); border: 1px solid rgba(255,255,255,.23); border-radius: 50%; display: flex; flex-direction: column; height: 88px; justify-content: center; position: absolute; width: 88px; }
 .orbit-node span { color: rgba(255,255,255,.52); font-family: var(--mono); font-size: 8px; letter-spacing: .1em; margin-top: 5px; text-transform: uppercase; }
 .orbit-node svg { color: var(--coral); }
-.node-genesis { left: 5%; top: 14%; }
+.node-immersion { left: 5%; top: 14%; }
 .node-transition { right: 0; top: 43%; }
-.node-meta { bottom: 11%; left: 20%; }
+.node-genesis { bottom: 11%; left: 20%; }
 .landing-footer { align-items: center; border-top: 1px solid rgba(255,255,255,.14); color: rgba(255,255,255,.44); display: flex; font-family: var(--mono); font-size: 9px; justify-content: space-between; letter-spacing: .08em; padding-bottom: 22px; padding-top: 22px; text-transform: uppercase; gap: 20px; }
 .landing-footer-researcher { display: flex; flex-direction: column; gap: 3px; }
 .landing-footer-researcher strong { color: rgba(255,255,255,.78); font-size: 10px; font-weight: 600; letter-spacing: .1em; }
