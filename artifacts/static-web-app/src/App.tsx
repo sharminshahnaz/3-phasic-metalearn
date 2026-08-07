@@ -1,560 +1,183 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 import {
-  BookOpen,
-  Check,
-  ChevronRight,
-  Globe2,
-  HelpCircle,
-  Lightbulb,
-  Play,
-  RotateCcw,
-  X,
+  ArrowLeft, ArrowRight, BarChart3, BookOpen, Bot, Check, ChevronRight, CircleHelp,
+  ClipboardCheck, FileText, GraduationCap, LayoutDashboard, Lightbulb, MessageCircle,
+  Play, Send, Sparkles, Target, Users, X, Zap,
 } from 'lucide-react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from '@/components/ui/toaster';
-import { TooltipProvider } from '@/components/ui/tooltip';
-import NotFound from '@/pages/not-found';
-import { Route, Switch, Router as WouterRouter } from 'wouter';
 
-const queryClient = new QueryClient();
+type Screen = 'landing' | 'student' | 'admin';
+type StudentView = 'subject' | 'group' | 'unit' | 'lesson';
+type Phase = 'genesis' | 'transition' | 'metacognition';
 
-type Language = 'EN' | 'BN';
-type LessonNumber = 1 | 2;
-type ModalName = 'modal25' | 'modal50' | 'modal75' | 'modal100' | null;
-
-const lessons = {
-  1: {
-    title: 'Lesson 1: Introduction to Strategy Scaffolding',
-    shortTitle: 'Strategy Scaffolding',
-    video:
-      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-    description:
-      'Build a plan before you begin. Explore how an intentional strategy can make learning more visible and manageable.',
-  },
-  2: {
-    title: 'Lesson 2: Applying Metacognitive Regulation',
-    shortTitle: 'Metacognitive Regulation',
-    video:
-      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
-    description:
-      'Practice noticing what you understand, where you are stuck, and which learning move can help you continue.',
-  },
-} satisfies Record<LessonNumber, { title: string; shortTitle: string; video: string; description: string }>;
-
-const strategies = [
-  'Mnemonics',
-  'Method of Loci',
-  'Concept Mapping',
-  'Feynman Technique',
-  'Frayer Model',
-  'Chunking',
-  'Brain Dump',
+const quotes = [
+  ['Learning is not a product of teaching. Learning is a product of the activity of learners.', 'John Holt'],
+  ['The mind is not a vessel to be filled but a fire to be kindled.', 'Plutarch'],
+  ['We do not learn from experience. We learn from reflecting on experience.', 'John Dewey'],
+  ['The important thing is not to stop questioning. Curiosity has its own reason for existing.', 'Albert Einstein'],
 ];
 
-const copy = {
-  EN: {
-    eyebrow: 'Metacognitive research platform',
-    title: 'Learn how you learn.',
-    intro:
-      'A guided space for planning, monitoring, and reflecting on the strategies that shape your learning.',
-    lessonSelection: 'Select lesson',
-    planning: 'Planning phase',
-    chooseStrategy: 'Choose your primary learning strategy',
-    hint: 'Give hints',
-    videoGuide: 'Watch, pause, reflect',
-    resources: 'Course documents & resources',
-    syllabus: 'View syllabus PDF',
-    lessonPdf: 'View lesson PPT PDF',
-    reflectionSaved: 'Reflection saved in this browser.',
-    demoMode: 'Demo mode · local browser storage',
-    pause: 'Pause',
-    continue: 'Continue video',
-    submitResume: 'Submit & resume',
-    submitReflection: 'Submit reflection',
-    completeLesson: 'Complete lesson',
-    close: 'Close',
-    choose: 'Choose one option',
-    saved: 'Lesson evaluation recorded successfully.',
-    footer: 'A practical space for becoming more aware of your own learning.',
-  },
-  BN: {
-    eyebrow: 'মেটাকগনিটিভ গবেষণা প্ল্যাটফর্ম',
-    title: 'আপনি কীভাবে শেখেন তা শিখুন।',
-    intro:
-      'শেখার কৌশল পরিকল্পনা, পর্যবেক্ষণ এবং প্রতিফলনের জন্য একটি নির্দেশিত স্থান।',
-    lessonSelection: 'পাঠ বেছে নিন',
-    planning: 'পরিকল্পনা পর্যায়',
-    chooseStrategy: 'আপনার প্রধান শেখার কৌশল বেছে নিন',
-    hint: 'ইঙ্গিত দিন',
-    videoGuide: 'দেখুন, থামুন, ভাবুন',
-    resources: 'কোর্সের নথি ও সংস্থান',
-    syllabus: 'সিলেবাস PDF দেখুন',
-    lessonPdf: 'পাঠের PPT PDF দেখুন',
-    reflectionSaved: 'এই ব্রাউজারে প্রতিফলন সংরক্ষিত হয়েছে।',
-    demoMode: 'ডেমো মোড · ব্রাউজারে সংরক্ষিত',
-    pause: 'থামুন',
-    continue: 'ভিডিও চালিয়ে যান',
-    submitResume: 'জমা দিয়ে চালিয়ে যান',
-    submitReflection: 'প্রতিফলন জমা দিন',
-    completeLesson: 'পাঠ শেষ করুন',
-    close: 'বন্ধ করুন',
-    choose: 'একটি উত্তর বেছে নিন',
-    saved: 'পাঠের মূল্যায়ন সফলভাবে সংরক্ষিত হয়েছে।',
-    footer: 'নিজের শেখাকে আরও সচেতনভাবে বোঝার জন্য একটি ব্যবহারিক স্থান।',
-  },
-} as const;
+const lessons = [
+  { id: 1, title: 'Meaning of Educational Psychology', short: 'Meaning & foundations', description: 'Trace the relationship between education and psychology, then notice how human behaviour begins with sensation, perception, and conception.' },
+  { id: 2, title: 'Schools of Educational Psychology', short: 'Schools of thought', description: 'Compare behaviourism, Gestalt, and psycho-analysis as distinct lenses for understanding learning.' },
+  { id: 3, title: 'Methods of Inquiry in Psychology', short: 'Methods of inquiry', description: 'Choose an appropriate method — observation, experimentation, case study, survey, or correlation — for a research question.' },
+];
 
-function Modal({
-  name,
-  onClose,
-  children,
-}: {
-  name: Exclude<ModalName, null>;
-  onClose: () => void;
-  children: React.ReactNode;
-}) {
+const strategies = ['Concept mapping', 'Feynman technique', 'Method of loci', 'Retrieval practice'];
+
+function Brand({ dark = false }: { dark?: boolean }) {
+  return <span className="brand"><span className="brand-mark" /><span className="brand-copy">3 Phasic Meta Learn</span></span>;
+}
+
+function Toast({ message, onClose }: { message: string; onClose: () => void }) {
+  return <div className="toast" role="status"><Check size={16} /><span>{message}</span><button onClick={onClose} aria-label="Dismiss notification"><X size={15} /></button></div>;
+}
+
+function Landing({ onEnter }: { onEnter: (role: 'student' | 'admin') => void }) {
+  const [quote, setQuote] = useState(quotes[0]);
   useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
-  }, [onClose]);
-
-  return (
-    <div
-      className="modal"
-      data-testid={`modal-${name}`}
-      role="dialog"
-      aria-modal="true"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
-    >
-      <div className="modal-content">
-        <button className="modal-close" aria-label="Close dialog" onClick={onClose} type="button">
-          <X size={18} />
-        </button>
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function DocumentPreview({
-  activeDocument,
-  lesson,
-}: {
-  activeDocument: 'syllabus' | 'ppt';
-  lesson: LessonNumber;
-}) {
-  const isSyllabus = activeDocument === 'syllabus';
-
-  return (
-    <div className="document-preview" data-testid={`document-preview-${activeDocument}`}>
-      <div className="document-toolbar">
-        <span><BookOpen size={14} /> {isSyllabus ? 'Syllabus' : lessons[lesson].shortTitle}</span>
-        <span>PDF resource preview</span>
-      </div>
-      <div className="document-paper">
-        <span className="document-paper-kicker">{isSyllabus ? 'Course syllabus' : `Lesson 0${lesson} · companion notes`}</span>
-        <h3>{isSyllabus ? 'Metacognitive Learning Lab' : lessons[lesson].title}</h3>
-        <div className="document-rule" />
-        <div className="document-columns">
-          <div>
-            <span className="document-subhead">{isSyllabus ? 'Course focus' : 'Guiding question'}</span>
-            <p>{isSyllabus
-              ? 'Plan, monitor, and reflect on the strategies you use to learn.'
-              : lessons[lesson].description}</p>
+    setQuote(quotes[Math.floor(Math.random() * quotes.length)]);
+  }, []);
+  return <main className="landing">
+    <header className="landing-header">
+      <Brand />
+      <nav className="landing-nav"><span className="micro">Research prototype · RAC meeting demo</span><button className="outline-button" onClick={() => onEnter('admin')} data-testid="button-enter-admin"><LayoutDashboard size={15} /> Admin view</button></nav>
+    </header>
+    <section className="landing-main">
+      <div className="landing-grid">
+        <div className="landing-copy">
+          <span className="eyebrow">A visible architecture for learning</span>
+          <h1>Learn in<br /><em>three phases.</em></h1>
+          <p>3 Phasic Meta Learn makes the hidden work of learning visible — from building a plan, to learning with support, to evaluating the moves that made progress possible.</p>
+          <div className="landing-actions">
+            <button className="solid-button light" onClick={() => onEnter('student')} data-testid="button-enter-student">Enter student demo <ArrowRight size={16} /></button>
+            <button className="outline-button" onClick={() => onEnter('admin')} data-testid="button-enter-admin-secondary">Explore the committee dashboard</button>
           </div>
-          <div>
-            <span className="document-subhead">{isSyllabus ? 'Learning moves' : 'Remember'}</span>
-            <p>{isSyllabus
-              ? 'Strategy selection · progress checks · reflective evaluation'
-              : 'There is no single correct route through a learning process.'}</p>
-          </div>
+          <div className="quote-card"><blockquote>“{quote[0]}”</blockquote><cite>— {quote[1]} · opening reflection</cite></div>
         </div>
-        <div className="document-lines" aria-hidden="true">
-          <span /><span /><span /><span />
+        <div className="orbit-stage" aria-label="Three phases: Genesis, Transition, and Metacognition">
+          <div className="orbit-ring"><span /></div>
+          <div className="orbit-center"><Sparkles size={22} /><strong>learning<br />visible</strong></div>
+          <div className="orbit-node node-genesis"><Lightbulb size={19} /><span>Genesis</span></div>
+          <div className="orbit-node node-transition"><Zap size={19} /><span>Transition</span></div>
+          <div className="orbit-node node-meta"><Target size={19} /><span>Metacognition</span></div>
         </div>
       </div>
+    </section>
+    <footer className="landing-footer"><div className="landing-footer-researcher"><strong>Sharmin Shahnaz</strong><span>Reg. No. 24DEDUC010 · Ph.D. Research Scholar</span><span>Department of Education · Central University of Karnataka</span></div><span className="micro">RAC Demo · Education subject · Group C / Group D</span></footer>
+  </main>;
+}
+
+function Topbar({ onHome, onRole }: { onHome: () => void; onRole: (role: 'student' | 'admin') => void }) {
+  return <header className="topbar">
+    <button className="brand" onClick={onHome} aria-label="Return to home"><span className="brand-mark" /><span className="brand-copy">3 Phasic Meta Learn</span></button>
+    <div className="topbar-researcher"><span className="topbar-researcher-name">Sharmin Shahnaz</span><span className="micro">Reg. 24DEDUC010 · Dept. of Education · CUK</span></div>
+    <div className="topbar-actions"><span className="micro topbar-demo-note">RAC demo</span><button className="icon-button" onClick={() => onRole('admin')} aria-label="Open admin dashboard"><LayoutDashboard size={16} /></button><button className="icon-button" onClick={onHome} aria-label="Return to opening"><X size={16} /></button></div>
+  </header>;
+}
+
+function Sidebar({ view, onView }: { view: StudentView; onView: (view: StudentView) => void }) {
+  const items: [StudentView, string, ReactNode][] = [
+    ['subject', 'Subject overview', <BookOpen size={16} />],
+    ['group', 'Groups C + D', <Users size={16} />],
+    ['unit', 'Unit I · Education', <FileText size={16} />],
+    ['lesson', 'Lesson workspace', <ClipboardCheck size={16} />],
+  ];
+  return <aside className="sidebar">
+    <div className="sidebar-intro"><span className="micro">Student workspace</span><h2>Education<br />research lab</h2></div>
+    <nav className="nav-list">{items.map(([key, label, icon]) => <button className={`nav-item ${view === key ? 'active' : ''}`} key={key} onClick={() => onView(key)} data-testid={`nav-${key}`}>{icon}<span>{label}</span></button>)}</nav>
+    <div className="sidebar-footer"><span className="micro">Current pathway</span><p>Group C · Unit I<br />Three checkpoints · 20 contact hours</p></div>
+  </aside>;
+}
+
+function StudentShell({ onHome, onAdmin, children, view, onView }: { onHome: () => void; onAdmin: () => void; children: ReactNode; view: StudentView; onView: (view: StudentView) => void }) {
+  return <div className="shell"><Topbar onHome={onHome} onRole={() => onAdmin()} /><div className="workspace"><Sidebar view={view} onView={onView} /><main className="main-column"><div className="main-inner">{children}</div></main></div></div>;
+}
+
+function SubjectView({ onGroup }: { onGroup: (group: 'C' | 'D') => void }) {
+  return <><div className="breadcrumb"><span>Student</span><ChevronRight size={12} /><span>Subject overview</span></div>
+    <div className="page-heading"><div><span className="section-index">01 · orientation</span><h1>Education<br />as inquiry.</h1></div><p>Follow one curriculum through a sequence designed to make planning, support, and reflection observable.</p></div>
+    <section className="subject-card surface"><div className="subject-card-copy"><span className="eyebrow">Education subject</span><h2>Learning, mind,<br />and context</h2><p>A research-informed pathway for exploring how people learn — and how learners can become better observers of their own thinking.</p></div><div className="subject-card-art"><div className="art-lines" /></div></section>
+    <div className="section-heading" style={{ marginBottom: 17 }}><span className="section-index">02 · cohort</span><div><span className="eyebrow">Choose a study group</span><h2 style={{ fontFamily: 'var(--serif)', fontSize: 36, fontWeight: 400, margin: '12px 0 0' }}>Where will you begin?</h2></div></div>
+    <div className="group-grid"><button className="group-card" onClick={() => onGroup('C')} data-testid="button-group-c"><span className="group-letter">GROUP C</span><ChevronRight size={18} /><h3>Foundations</h3><p>Unit I · 20 contact hours · 3 lessons</p></button><button className="group-card" onClick={() => onGroup('D')} data-testid="button-group-d"><span className="group-letter">GROUP D</span><ChevronRight size={18} /><h3>Applications</h3><p>Unit II · 18 contact hours · 2 lessons</p></button></div>
+  </>;
+}
+
+function GroupView({ onUnit, onBack }: { onUnit: () => void; onBack: () => void }) {
+  return <><div className="breadcrumb"><button onClick={onBack}>Subject</button><ChevronRight size={12} /><span>Group C</span></div>
+    <div className="page-heading"><div><span className="section-index">03 · pathway</span><h1>Group C<br />foundations.</h1></div><p>A paced entry into educational psychology, with room to pause and make your learning decisions explicit.</p></div>
+    <div className="unit-view"><section className="unit-rail"><span className="eyebrow" style={{ color: '#a9d7cb' }}>Group C · curriculum</span><h2>One unit.<br />Many lenses.</h2><p>The first unit asks a simple question: what changes when we study learning as both a human process and a psychological one?</p><div className="contact-hours">20 contact hours · active</div></section><section className="lesson-list"><button className="lesson-row" onClick={onUnit} data-testid="button-open-unit"><span className="lesson-number">UNIT I</span><span><h3>Education &amp; Psychology</h3><p>Meaning, schools of thought, and methods of inquiry.</p></span><ChevronRight size={18} /></button><div className="surface" style={{ padding: 23 }}><span className="micro">Unit promise</span><ul className="topic-list" style={{ color: 'var(--ink-soft)', borderColor: 'var(--line)', marginTop: 15 }}><li style={{ color: 'var(--ink-soft)' }}>Connect educational aims to psychological processes.</li><li style={{ color: 'var(--ink-soft)' }}>Compare three schools of educational psychology.</li><li style={{ color: 'var(--ink-soft)' }}>Select methods for credible inquiry.</li></ul></div></section></div>
+  </>;
+}
+
+function UnitView({ onLesson, onBack }: { onLesson: (id: number) => void; onBack: () => void }) {
+  return <><div className="breadcrumb"><button onClick={onBack}>Group C</button><ChevronRight size={12} /><span>Unit I</span></div>
+    <div className="page-heading"><div><span className="section-index">04 · unit map</span><h1>Education<br />&amp; Psychology.</h1></div><p>Three lessons move from meaning, through schools of thought, into the methods psychologists use to build knowledge.</p></div>
+    <div className="unit-view"><section className="unit-rail"><span className="eyebrow" style={{ color: '#a9d7cb' }}>Unit I</span><h2>Education<br />&amp;<br />Psychology</h2><p>Build a shared vocabulary before choosing a strategy for learning with the material.</p><div className="contact-hours">20 contact hours · Group C</div></section><section className="lesson-list">{lessons.map((lesson) => <button className="lesson-row" key={lesson.id} onClick={() => onLesson(lesson.id)} data-testid={`button-open-lesson-${lesson.id}`}><span className="lesson-number">0{lesson.id}</span><span><h3>{lesson.title}</h3><p>{lesson.description}</p></span><ChevronRight size={18} /></button>)}</section></div>
+    <section className="surface" style={{ marginTop: 26, padding: 24 }}><span className="micro">Unit I · core content</span><div className="topic-list" style={{ gridTemplateColumns: 'repeat(2, minmax(0,1fr))' }}><li>Meaning of Educational Psychology: needs, relationship between education and psychology, and bases of human behavior.</li><li>Human behavior: sensation, perception, and conception.</li><li>Schools: behaviourism, Gestalt, and psycho-analysis.</li><li>Methods: observation, experimentation, case study, survey, and correlation.</li></div></section>
+  </>;
+}
+
+function LessonWorkspace({ lessonId, onBack, onToast }: { lessonId: number; onBack: () => void; onToast: (message: string) => void }) {
+  const [phase, setPhase] = useState<Phase>('genesis');
+  const [strategy, setStrategy] = useState(strategies[0]);
+  const [started, setStarted] = useState(false);
+  const [evaluation, setEvaluation] = useState('');
+  const lesson = lessons.find((item) => item.id === lessonId) || lessons[0];
+  const phaseIndex = { genesis: 0, transition: 1, metacognition: 2 }[phase];
+  return <><div className="lesson-header"><div><button className="back-button" onClick={onBack}><ArrowLeft size={14} /> Back to Unit I</button><span className="eyebrow" style={{ marginTop: 22 }}>Lesson 0{lesson.id} · Group C</span><h1>{lesson.title}</h1><p>{lesson.description}</p></div></div>
+    <div className="phase-nav">{(['genesis', 'transition', 'metacognition'] as Phase[]).map((key, index) => <button className={`phase-tab ${phase === key ? 'active' : ''}`} key={key} onClick={() => setPhase(key)} data-testid={`button-phase-${key}`}><span className="phase-code">0{index + 1} · {key}</span><strong>{key === 'genesis' ? 'Build the plan' : key === 'transition' ? 'Learn with support' : 'Evaluate & reflect'}</strong></button>)}</div>
+    <div className="phase-content">
+      {phase === 'genesis' && <div className="planning-grid"><section className="planning-sheet surface"><span className="section-index">Genesis phase · planning sheet</span><h2>Before the video,<br />place your attention.</h2><p>Choose a deliberate route through the lesson. A plan does not predict the learning perfectly; it gives you something to notice when the route changes.</p><div className="prompt-row"><div className="prompt-card"><span className="micro">01 · intention</span><p>What do you already associate with educational psychology?</p></div><div className="prompt-card"><span className="micro">02 · signal</span><p>What will tell you that a new concept has become clear?</p></div></div><div className="begin-row"><p>Planning is recorded locally for this meeting demo.</p><button className="solid-button" onClick={() => { setStarted(true); setPhase('transition'); onToast('Genesis complete — entering Transition.'); }} data-testid="button-begin-transition">Begin Transition <ArrowRight size={15} /></button></div></section><StrategyPanel strategy={strategy} onStrategy={setStrategy} /></div>}
+      {phase === 'transition' && <TransitionView started={started} lesson={lesson} onToast={onToast} onEvaluate={() => setPhase('metacognition')} />}
+      {phase === 'metacognition' && <EvaluationView evaluation={evaluation} setEvaluation={setEvaluation} onComplete={() => onToast('Evaluation recorded locally. This lesson is complete.')} />}
     </div>
-  );
+    <div className="micro" style={{ marginTop: 18 }}>Phase {phaseIndex + 1} of 3 · Strategy selected: {strategy}</div>
+  </>;
 }
 
-function ProgressModal({
-  modal,
-  language,
-  onClose,
-  onSubmitReflection,
-  onSubmitQuiz,
-}: {
-  modal: Exclude<ModalName, null>;
-  language: Language;
-  onClose: () => void;
-  onSubmitReflection: (text: string) => void;
-  onSubmitQuiz: () => void;
-}) {
-  const t = copy[language];
-  const [muddyPoint, setMuddyPoint] = useState('');
-  const [monitoring, setMonitoring] = useState('');
-  const [quizAnswer, setQuizAnswer] = useState('');
-
-  if (modal === 'modal25') {
-    return (
-      <Modal name={modal} onClose={onClose}>
-        <span className="modal-kicker">25% progress</span>
-        <h3>Content flashcard</h3>
-        <p className="modal-question">
-          <strong>What is metacognitive regulation?</strong>
-        </p>
-        <div className="answer-callout">
-          It involves monitoring and controlling your cognitive processes during learning.
-        </div>
-        <button className="btn" onClick={onClose} type="button">
-          {t.continue} <ChevronRight size={16} />
-        </button>
-      </Modal>
-    );
-  }
-
-  if (modal === 'modal50') {
-    return (
-      <Modal name={modal} onClose={onClose}>
-        <span className="modal-kicker">50% progress</span>
-        <h3>Monitoring survey</h3>
-        <p className="modal-question">How well do you understand the material presented so far?</p>
-        <div className="radio-list">
-          {[
-            ['High', 'High comprehension'],
-            ['Medium', 'Moderate comprehension'],
-            ['Low', 'Struggling / confused'],
-          ].map(([value, label]) => (
-            <label className={`radio-option ${monitoring === value ? 'is-selected' : ''}`} key={value}>
-              <input
-                checked={monitoring === value}
-                name="monitoring"
-                onChange={(event) => setMonitoring(event.target.value)}
-                type="radio"
-                value={value}
-              />
-              <span>{label}</span>
-            </label>
-          ))}
-        </div>
-        <button className="btn" disabled={!monitoring} onClick={onClose} type="button">
-          {t.submitResume} <ChevronRight size={16} />
-        </button>
-      </Modal>
-    );
-  }
-
-  if (modal === 'modal75') {
-    return (
-      <Modal name={modal} onClose={onClose}>
-        <span className="modal-kicker">75% progress</span>
-        <h3>Muddy point reflection</h3>
-        <p className="modal-question">
-          What concept or part of this video is still unclear or confusing to you?
-        </p>
-        <textarea
-          aria-label="Muddy point reflection"
-          className="reflection-input"
-          onChange={(event) => setMuddyPoint(event.target.value)}
-          placeholder="Write your reflection here..."
-          rows={4}
-          value={muddyPoint}
-        />
-        <button className="btn" disabled={!muddyPoint.trim()} onClick={() => onSubmitReflection(muddyPoint)} type="button">
-          {t.submitReflection} <ChevronRight size={16} />
-        </button>
-      </Modal>
-    );
-  }
-
-  return (
-    <Modal name={modal} onClose={onClose}>
-      <span className="modal-kicker">100% complete</span>
-      <h3>Evaluation & quiz</h3>
-      <p className="modal-question">
-        <strong>Which technique relies on spatial memory journeys?</strong>
-      </p>
-      <div className="radio-list">
-        {[
-          ['A', 'Concept mapping'],
-          ['B', 'Method of loci'],
-          ['C', 'Chunking'],
-        ].map(([value, label]) => (
-          <label className={`radio-option ${quizAnswer === value ? 'is-selected' : ''}`} key={value}>
-            <input
-              checked={quizAnswer === value}
-              name="quiz"
-              onChange={(event) => setQuizAnswer(event.target.value)}
-              type="radio"
-              value={value}
-            />
-            <span>{value}) {label}</span>
-          </label>
-        ))}
-      </div>
-      <button className="btn" disabled={!quizAnswer} onClick={onSubmitQuiz} type="button">
-        {t.completeLesson} <Check size={16} />
-      </button>
-    </Modal>
-  );
+function StrategyPanel({ strategy, onStrategy }: { strategy: string; onStrategy: (value: string) => void }) {
+  return <aside className="strategy-panel"><span className="eyebrow">Strategy selector</span><h3>Give your thinking a shape.</h3><p>Pick one primary move. You can change it later, but begin with a hypothesis.</p><div className="strategy-list">{strategies.map((item) => <button className={`strategy-option ${strategy === item ? 'selected' : ''}`} key={item} onClick={() => onStrategy(item)} data-testid={`button-strategy-${item.toLowerCase().replaceAll(' ', '-')}`}>{item}{strategy === item && <Check size={14} />}</button>)}</div></aside>;
 }
 
-function Home() {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [language, setLanguage] = useState<Language>('EN');
-  const [lesson, setLesson] = useState<LessonNumber>(1);
-  const [strategy, setStrategy] = useState('Mnemonics');
-  const [modal, setModal] = useState<ModalName>(null);
-  const [completed, setCompleted] = useState(false);
+function TransitionView({ started, lesson, onToast, onEvaluate }: { started: boolean; lesson: typeof lessons[0]; onToast: (message: string) => void; onEvaluate: () => void }) {
+  const [progress, setProgress] = useState(50);
+  const [hint, setHint] = useState('');
+  return <><div className="transition-layout"><section className="video-surface"><div className="video-head"><span className="micro">Transition · guided media</span><span className="micro">Lesson 0{lesson.id} · 08:40</span></div><div className="video-body"><button className="play-button" onClick={() => { setProgress(Math.min(progress + 10, 90)); onToast('Playback advanced in the local demo.'); }} aria-label="Play lesson video" data-testid="button-play-video"><Play size={24} /></button><h2>{lesson.short}</h2><p>{started ? 'Pause, notice, and continue when ready.' : 'Your plan will appear here as you learn.'}</p></div><div className="video-foot"><span className="micro">0{Math.round(progress / 10)}:12</span><div className="progress-track"><div className="progress-fill" style={{ width: `${progress}%` }} /></div><span className="micro">{progress}%</span></div></section><aside className="monitor-card surface"><span className="eyebrow">Live monitoring</span><h3>Where is your understanding?</h3><div className="monitor-ring"><span>{progress}%</span></div><p>At the midpoint, name what is clear and what needs another pass.</p><button className="text-button" onClick={() => setHint('Try drawing a three-step chain: stimulus → interpretation → meaning.')} data-testid="button-get-hint"><CircleHelp size={15} /> Get hints</button>{hint && <div className="hint-callout">{hint}</div>}</aside></div><div className="resource-grid"><div className="embed-card surface padlet"><span className="micro">Embedded study surface</span><div className="embed-decoration" /><h3>Padlet wall</h3><p>Pin one observation, one question, and one connection for the group to revisit.</p><button className="text-button" style={{ marginTop: 18 }} onClick={() => onToast('Padlet surface opened in the meeting demo.')} data-testid="button-open-padlet">Open wall <ArrowRight size={14} /></button></div><div className="embed-card surface anki"><span className="micro">Retrieval practice</span><div className="embed-decoration" /><h3>Anki cards</h3><p>Test the distinctions between sensation, perception, and conception.</p><button className="text-button" style={{ marginTop: 18 }} onClick={() => onToast('Anki-style cards are ready for review.')} data-testid="button-open-anki">Review cards <ArrowRight size={14} /></button></div></div><div className="begin-row"><p>Monitoring checkpoint is active at 50%.</p><button className="solid-button" onClick={onEvaluate} data-testid="button-go-evaluation">Continue to evaluation <ArrowRight size={15} /></button></div></>;
+}
+
+function EvaluationView({ evaluation, setEvaluation, onComplete }: { evaluation: string; setEvaluation: (value: string) => void; onComplete: () => void }) {
+  return <><div className="evaluation"><section className="evaluation-intro"><span className="eyebrow" style={{ color: '#a9d7cb' }}>Metacognition phase</span><h2>Look back<br />at the move.</h2><p>Evaluation is not a score alone. It is evidence about which strategy helped, where the concept shifted, and what you would change next time.</p></section><section className="evaluation-form surface"><label htmlFor="reflection">What did you notice about your learning?</label><textarea id="reflection" value={evaluation} onChange={(event) => setEvaluation(event.target.value)} placeholder="Name one strategy, one moment of clarity, or one remaining question." data-testid="input-reflection" /><button className="solid-button" disabled={!evaluation.trim()} onClick={onComplete} data-testid="button-submit-evaluation">Save reflection <Check size={15} /></button></section></div><div className="completion" style={{ marginTop: 17 }}><span className="completion-icon"><BarChart3 size={16} /></span><div><strong>End-of-lesson evaluation</strong><p>Your reflection stays in this browser for the committee demo.</p></div></div></>;
+}
+
+function Chatbot() {
+  const [open, setOpen] = useState(false);
+  const [input, setInput] = useState('');
+  const [messages, setMessages] = useState(['I am Levo. Ask me about the lesson, a strategy, or where to look next.']);
+  const send = () => { if (!input.trim()) return; const question = input.trim(); setMessages((items) => [...items, question, 'Try connecting that question to the three phases: plan what you know, monitor what changes, then reflect on the evidence.']); setInput(''); };
+  return <div className="chatbot">{open && <div className="chat-window"><div className="chat-header"><div><strong>Levo</strong><small>learning companion · local demo</small></div><button onClick={() => setOpen(false)} aria-label="Close Levo"><X size={16} /></button></div><div className="chat-messages">{messages.map((message, index) => <div className={`chat-message ${index % 2 === 1 ? 'user' : ''}`} key={`${message}-${index}`}>{message}</div>)}</div><div className="chat-input"><input value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && send()} placeholder="Ask Levo..." aria-label="Message Levo" data-testid="input-chat" /><button onClick={send} aria-label="Send message" data-testid="button-send-chat"><Send size={15} /></button></div></div>}<button className="chat-toggle" onClick={() => setOpen(!open)} aria-label="Open Levo chatbot" data-testid="button-open-levo"><Bot size={22} /></button></div>;
+}
+
+function StudentApp({ onHome, onAdmin }: { onHome: () => void; onAdmin: () => void }) {
+  const [view, setView] = useState<StudentView>('subject');
+  const [group, setGroup] = useState<'C' | 'D'>('C');
+  const [lessonId, setLessonId] = useState(1);
   const [toast, setToast] = useState('');
-  const [activeDocument, setActiveDocument] = useState<'syllabus' | 'ppt'>('syllabus');
-  const [triggers, setTriggers] = useState({ 25: false, 50: false, 75: false, 100: false });
-  const t = copy[language];
-
-  useEffect(() => {
-    const saved = window.localStorage.getItem('metacognitive-reflection');
-    if (saved) setToast(t.reflectionSaved);
-  }, [t.reflectionSaved]);
-
-  const resetTriggers = () => setTriggers({ 25: false, 50: false, 75: false, 100: false });
-
-  const selectLesson = (number: LessonNumber) => {
-    setLesson(number);
-    setCompleted(false);
-    setModal(null);
-    resetTriggers();
-    if (videoRef.current) {
-      videoRef.current.load();
-    }
-  };
-
-  const handleProgress = () => {
-    const video = videoRef.current;
-    if (!video?.duration) return;
-    const progress = (video.currentTime / video.duration) * 100;
-    const checkpoint = progress >= 99 ? 100 : progress >= 75 ? 75 : progress >= 50 ? 50 : progress >= 25 ? 25 : null;
-    if (!checkpoint || triggers[checkpoint]) return;
-    setTriggers((current) => ({ ...current, [checkpoint]: true }));
-    video.pause();
-    setModal(`modal${checkpoint}` as Exclude<ModalName, null>);
-  };
-
-  const closeModal = () => {
-    setModal(null);
-    window.setTimeout(() => videoRef.current?.play().catch(() => undefined), 80);
-  };
-
-  const submitReflection = (text: string) => {
-    window.localStorage.setItem(
-      'metacognitive-reflection',
-      JSON.stringify({ lesson, strategy, text, savedAt: new Date().toISOString() }),
-    );
-    setToast(t.reflectionSaved);
-    setModal(null);
-    window.setTimeout(() => videoRef.current?.play().catch(() => undefined), 80);
-  };
-
-  const submitQuiz = () => {
-    setCompleted(true);
-    setToast(t.saved);
-    setModal(null);
-  };
-
-  const showHint = () => {
-    setToast(
-      language === 'BN'
-        ? 'ইঙ্গিত: আপনার নোটকে ভিজ্যুয়াল ম্যাপে সাজান বা নতুন ধারণাকে পরিচিত স্থানিক অবস্থানের সঙ্গে যুক্ত করুন।'
-        : 'Hint: Structure your notes into visual maps or link new ideas to familiar spatial locations.',
-    );
-  };
-
-  return (
-    <main className="research-app">
-      <header className="site-header">
-        <a className="brand" href="#top">
-          <span className="brand-mark"><span /></span>
-          <span>
-            <strong>Meta</strong> / cognition
-          </span>
-        </a>
-        <div className="header-actions">
-          <span className="status-pill"><span /> {t.demoMode}</span>
-          <div className="language-switch" aria-label="Language switcher">
-            <Globe2 size={15} />
-            <button className={language === 'EN' ? 'is-active' : ''} onClick={() => setLanguage('EN')} type="button">EN</button>
-            <span>/</span>
-            <button className={language === 'BN' ? 'is-active' : ''} onClick={() => setLanguage('BN')} type="button">BN</button>
-          </div>
-        </div>
-      </header>
-
-      <section className="research-hero" id="top">
-        <div className="hero-grid">
-          <div className="hero-text">
-            <span className="eyebrow"><span /> {t.eyebrow}</span>
-            <h1>{t.title}</h1>
-            <p>{t.intro}</p>
-            <a className="hero-link" href="#lesson">
-              Begin a lesson <ChevronRight size={17} />
-            </a>
-          </div>
-          <div className="hero-diagram" aria-label="Learning cycle diagram" role="img">
-            <div className="diagram-orbit orbit-one" />
-            <div className="diagram-orbit orbit-two" />
-            <div className="diagram-core"><BookOpen size={27} strokeWidth={1.4} /></div>
-            <span className="diagram-label label-plan">PLAN</span>
-            <span className="diagram-label label-monitor">MONITOR</span>
-            <span className="diagram-label label-reflect">REFLECT</span>
-          </div>
-        </div>
-      </section>
-
-      <main className="content-shell" id="lesson">
-        <section className="lesson-selector">
-          <div className="section-heading">
-            <span className="section-number">01</span>
-            <div>
-              <span className="eyebrow">Course pathway</span>
-              <h2>{t.lessonSelection}</h2>
-            </div>
-          </div>
-          <div className="lesson-buttons">
-            {[1, 2].map((number) => (
-              <button
-                className={`lesson-button ${lesson === number ? 'is-active' : ''}`}
-                data-testid={`button-lesson-${number}`}
-                key={number}
-                onClick={() => selectLesson(number as LessonNumber)}
-                type="button"
-              >
-                <span>0{number}</span>
-                <strong>{lessons[number as LessonNumber].shortTitle}</strong>
-                <ChevronRight size={17} />
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <section className="planning-box">
-          <div className="planning-copy">
-            <div className="section-label"><Lightbulb size={15} /> {t.planning}</div>
-            <h2>{lessons[lesson].title}</h2>
-            <p>{lessons[lesson].description}</p>
-          </div>
-          <div className="planning-control">
-            <label htmlFor="strategySelect">{t.chooseStrategy}</label>
-            <div className="control-row">
-              <select id="strategySelect" onChange={(event) => setStrategy(event.target.value)} value={strategy}>
-                {strategies.map((item) => <option key={item} value={item}>{item}</option>)}
-              </select>
-              <button className="btn-secondary" data-testid="button-hint" onClick={showHint} type="button">
-                <HelpCircle size={16} /> {t.hint}
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <section className="video-container">
-          <div className="section-header">
-            <div>
-              <span className="eyebrow">{t.videoGuide}</span>
-              <h2>{lessons[lesson].title}</h2>
-            </div>
-            {completed && <span className="completed-badge"><Check size={14} /> Complete</span>}
-          </div>
-          <div className="video-frame">
-            <video
-              controls
-              data-testid="video-lesson"
-              onTimeUpdate={handleProgress}
-              ref={videoRef}
-              width="100%"
-            >
-              <source src={lessons[lesson].video} type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-            <div className="video-overlay-label"><Play size={13} /> {lesson === 1 ? 'LESSON 01' : 'LESSON 02'}</div>
-          </div>
-          <div className="video-meta">
-            <span>Strategy selected: <strong>{strategy}</strong></span>
-            <span>Checkpoints: 25 / 50 / 75 / 100%</span>
-          </div>
-        </section>
-
-        <section className="documents-section">
-          <div className="section-heading">
-            <span className="section-number">02</span>
-            <div>
-              <span className="eyebrow">Continue your inquiry</span>
-              <h2>{t.resources}</h2>
-            </div>
-          </div>
-          <div className="document-tabs">
-            <button className={activeDocument === 'syllabus' ? 'is-active' : ''} onClick={() => setActiveDocument('syllabus')} type="button">
-              <BookOpen size={16} /> {t.syllabus}
-            </button>
-            <button className={activeDocument === 'ppt' ? 'is-active' : ''} onClick={() => setActiveDocument('ppt')} type="button">
-              <BookOpen size={16} /> {t.lessonPdf}
-            </button>
-          </div>
-          <DocumentPreview activeDocument={activeDocument} lesson={lesson} />
-        </section>
-      </main>
-
-      <footer className="site-footer">
-        <div>
-          <span className="eyebrow">Meta / cognition</span>
-          <p>{t.footer}</p>
-        </div>
-        <span className="footer-note">Research prototype · 2026</span>
-      </footer>
-
-      {toast && (
-        <div className="toast" role="status">
-          <Check size={16} />
-          <span>{toast}</span>
-          <button aria-label="Dismiss notification" onClick={() => setToast('')} type="button"><X size={15} /></button>
-        </div>
-      )}
-
-      {modal && (
-        <ProgressModal
-          language={language}
-          modal={modal}
-          onClose={closeModal}
-          onSubmitQuiz={submitQuiz}
-          onSubmitReflection={submitReflection}
-        />
-      )}
-    </main>
-  );
+  const go = (next: StudentView) => setView(next);
+  useEffect(() => { if (!toast) return; const timer = window.setTimeout(() => setToast(''), 3200); return () => window.clearTimeout(timer); }, [toast]);
+  return <><StudentShell onHome={onHome} onAdmin={onAdmin} view={view} onView={go}>{view === 'subject' && <SubjectView onGroup={(next) => { setGroup(next); setView('group'); }} />}{view === 'group' && <GroupView onUnit={() => setView('unit')} onBack={() => setView('subject')} />}{view === 'unit' && <UnitView onLesson={(id) => { setLessonId(id); setView('lesson'); }} onBack={() => setView('group')} />}{view === 'lesson' && <LessonWorkspace lessonId={lessonId} onBack={() => setView('unit')} onToast={setToast} />}</StudentShell><Chatbot />{toast && <Toast message={toast} onClose={() => setToast('')} />}</>;
 }
 
-function Router() {
-  return (
-    <Switch>
-      <Route path="/" component={Home} />
-      <Route component={NotFound} />
-    </Switch>
-  );
+function AdminApp({ onHome, onStudent }: { onHome: () => void; onStudent: () => void }) {
+  return <div className="shell"><Topbar onHome={onHome} onRole={(role) => role === 'student' && onStudent()} /><div className="workspace"><Sidebar view="subject" onView={onStudent} /><main className="main-column"><div className="main-inner"><div className="admin-hero"><div><span className="section-index">Committee view · 06</span><h1>Curriculum<br />in motion.</h1></div><p>One glance across the pathway: what is being taught, what learners are doing, and where support is needed.</p></div><section className="metrics"><div className="metric"><span className="metric-label">Active learners</span><strong>48</strong><small>+6 this week</small></div><div className="metric"><span className="metric-label">Completion rate</span><strong>72%</strong><small>Group C leading</small></div><div className="metric"><span className="metric-label">At transition</span><strong>19</strong><small>Needs a check-in</small></div><div className="metric"><span className="metric-label">Reflections</span><strong>31</strong><small>Collected locally</small></div></section><div className="admin-grid"><section className="admin-panel surface"><div className="panel-title"><h2>Curriculum overview</h2><span>3 phases · 2 groups</span></div>{[['01', 'Genesis · planning', 'Learners selecting strategies', '78%'], ['02', 'Transition · supported learning', 'Midpoint monitoring active', '50%'], ['03', 'Metacognition · evaluation', 'Reflections submitted', '64%']].map(([number, title, sub, progress]) => <div className="curriculum-row" key={number}><span>{number}</span><div><strong>{title}</strong><small>{sub}</small></div><div className="bar"><span style={{ width: progress }} /></div></div>)}</section><section className="admin-panel surface"><div className="panel-title"><h2>Learner pulse</h2><span>today</span></div><div className="learner-list">{[['AS', 'A. Sen', 'Group C · Unit I', '86%'], ['MN', 'M. Noor', 'Group D · Unit II', '61%'], ['RK', 'R. Karim', 'Group C · Unit I', '50%']].map(([initials, name, detail, progress]) => <div className="learner" key={name}><span className="avatar">{initials}</span><div className="learner-info"><strong>{name}</strong><small>{detail}</small></div><span className="learner-progress">{progress}</span></div>)}</div><div className="signal-box"><span className="micro">Committee signal</span><p>Several learners paused at the distinction between perception and conception. Consider adding a shared example to the next live session.</p></div></section></div></div></main></div></div>;
 }
 
 function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-          <Router />
-        </WouterRouter>
-        <Toaster />
-      </TooltipProvider>
-    </QueryClientProvider>
-  );
+  const [screen, setScreen] = useState<Screen>('landing');
+  const enter = (role: 'student' | 'admin') => setScreen(role);
+  if (screen === 'landing') return <Landing onEnter={enter} />;
+  if (screen === 'admin') return <AdminApp onHome={() => setScreen('landing')} onStudent={() => setScreen('student')} />;
+  return <StudentApp onHome={() => setScreen('landing')} onAdmin={() => setScreen('admin')} />;
 }
 
 export default App;
