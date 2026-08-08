@@ -557,7 +557,95 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .phase-tab-count { color: rgba(255,255,255,.38); font-family: var(--mono); font-size: 9px; letter-spacing: .06em; margin-top: 2px; text-transform: uppercase; }
 .phase-tab.active .phase-tab-count { color: rgba(255,255,255,.6); }
 
+/* ── Notes section ────────────────────────────────────────────────────── */
+.notes-section { padding-bottom: 40px; }
+.notes-header { margin-bottom: 24px; }
+.notes-title { color: var(--deep); font-family: var(--serif); font-size: clamp(38px, 5vw, 60px); font-weight: 400; letter-spacing: -.05em; line-height: .88; margin: 10px 0 8px; }
+.notes-subtitle { color: var(--ink-soft); font-size: 13px; line-height: 1.6; margin: 0; max-width: 520px; }
+.notes-tabs { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
+.notes-tab { background: var(--paper-2); border: 1px solid var(--line); color: var(--ink-soft); font-family: var(--mono); font-size: 10px; letter-spacing: .06em; padding: 8px 14px; position: relative; text-transform: uppercase; transition: background .15s, color .15s, border-color .15s; }
+.notes-tab:hover { background: var(--white); color: var(--deep); border-color: var(--line-dark); }
+.notes-tab.active { background: var(--deep); border-color: var(--deep); color: white; }
+.notes-tab-dot { background: var(--coral); border-radius: 50%; height: 6px; position: absolute; right: 5px; top: 5px; width: 6px; }
+.notes-editor-wrap { background: var(--white); border: 1px solid var(--line); box-shadow: 0 4px 18px rgba(23,59,68,.05); }
+.notes-toolbar { align-items: center; background: var(--paper-2); border-bottom: 1px solid var(--line); display: flex; gap: 12px; padding: 8px 14px; }
+.notes-word-count { color: var(--ink-soft); }
+.notes-saved { color: var(--teal); }
+.notes-action-btn { background: transparent; border: 1px solid var(--line-dark); color: var(--ink-soft); font-family: var(--mono); font-size: 9px; letter-spacing: .06em; margin-left: auto; padding: 4px 10px; text-transform: uppercase; transition: background .15s, color .15s; }
+.notes-action-btn:hover { background: var(--white); color: var(--deep); }
+.notes-clear-btn { margin-left: 0; }
+.notes-clear-btn:hover { border-color: var(--coral); color: var(--coral); }
+.notes-textarea { border: 0; color: var(--ink); display: block; font-family: var(--sans); font-size: 14px; line-height: 1.75; min-height: 420px; outline: none; padding: 24px; resize: vertical; width: 100%; }
+.notes-textarea::placeholder { color: #b4c8c4; }
+
+/* ── Games hub ────────────────────────────────────────────────────────── */
+.games-section { padding-bottom: 40px; }
+.games-grid { display: grid; gap: 18px; grid-template-columns: repeat(3, 1fr); margin-top: 10px; }
+.game-card { background: var(--white); border: 1px solid var(--line); box-shadow: 0 4px 18px rgba(23,59,68,.05); display: flex; flex-direction: column; gap: 12px; min-height: 220px; padding: 26px; transition: border-color .2s, transform .2s, box-shadow .2s; }
+.game-card:hover { border-color: var(--teal); box-shadow: var(--shadow); transform: translateY(-3px); }
+.game-card-icon { color: var(--coral); }
+.game-card h3 { color: var(--deep); font-family: var(--serif); font-size: 26px; font-weight: 400; margin: 0; }
+.game-card p { color: var(--ink-soft); font-size: 12px; line-height: 1.55; margin: 0; }
+
+/* ── Game view (shared) ───────────────────────────────────────────────── */
+.game-view { padding-bottom: 40px; }
+.game-header { align-items: flex-start; display: flex; justify-content: space-between; margin-bottom: 28px; }
+.game-title { color: var(--deep); font-family: var(--serif); font-size: 36px; font-weight: 400; letter-spacing: -.04em; margin: 6px 0 0; }
+.game-stats { align-items: flex-end; display: flex; flex-direction: column; gap: 8px; }
+.game-stat { color: var(--teal); font-family: var(--mono); font-size: 13px; font-weight: 600; }
+.outline-button-dark { align-items: center; background: transparent; border: 1px solid var(--line-dark); color: var(--ink-soft); display: inline-flex; font-size: 11px; gap: 6px; padding: 7px 12px; transition: background .15s, border-color .15s, color .15s; }
+.outline-button-dark:hover { background: var(--white); border-color: var(--teal); color: var(--teal); }
+.game-complete-banner { background: var(--teal); color: white; font-family: var(--serif); font-size: 22px; font-weight: 400; margin-bottom: 20px; padding: 18px 24px; text-align: center; }
+
+/* ── Memory Match ─────────────────────────────────────────────────────── */
+.memory-grid { display: grid; gap: 10px; grid-template-columns: repeat(4, 1fr); }
+.mem-card { background: transparent; border: 0; cursor: pointer; height: 110px; perspective: 700px; }
+.mem-card-inner { height: 100%; position: relative; transform-style: preserve-3d; transition: transform .38s cubic-bezier(.4,0,.2,1); width: 100%; }
+.mem-card.flipped .mem-card-inner, .mem-card.matched .mem-card-inner { transform: rotateY(180deg); }
+.mem-card-front, .mem-card-back { align-items: center; backface-visibility: hidden; border: 1px solid var(--line); display: flex; height: 100%; justify-content: center; left: 0; padding: 10px; position: absolute; text-align: center; top: 0; width: 100%; }
+.mem-card-front { background: var(--deep); color: rgba(255,255,255,.4); transition: background .15s; }
+.mem-card:hover .mem-card-front { background: var(--deep-2); color: rgba(255,255,255,.7); }
+.mem-card-back { background: var(--white); border-color: var(--teal); transform: rotateY(180deg); }
+.mem-card-back.term { background: var(--coral-soft); border-color: var(--coral); }
+.mem-card-back p { color: var(--deep); font-size: 11px; line-height: 1.4; margin: 0; }
+.mem-card.matched .mem-card-front, .mem-card.matched .mem-card-back { background: var(--mint); border-color: var(--teal); opacity: .8; }
+
+/* ── Spinner game ─────────────────────────────────────────────────────── */
+.spinner-stage { align-items: center; display: flex; flex-direction: column; gap: 28px; }
+.spinner-wrap { position: relative; width: 240px; height: 240px; }
+.spinner-wheel { border-radius: 50%; height: 240px; overflow: hidden; position: relative; width: 240px; background: var(--deep); }
+.spinner-segment { border-style: solid; border-width: 120px 0 120px 240px; border-color: transparent; height: 0; left: 0; position: absolute; top: 0; transform-origin: 240px 120px; width: 0; opacity: .55; }
+.spinner-center { align-items: center; background: var(--paper); border: 4px solid var(--white); border-radius: 50%; color: var(--coral); display: flex; height: 70px; justify-content: center; left: 50%; position: absolute; top: 50%; transform: translate(-50%, -50%); width: 70px; z-index: 2; }
+.spinner-pointer { border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 20px solid var(--coral); left: 50%; position: absolute; top: -4px; transform: translateX(-50%); z-index: 3; }
+.spinner-btn { margin-top: 4px; min-width: 120px; }
+.spinner-result { background: var(--white); border: 1px solid var(--line); max-width: 560px; padding: 24px; width: 100%; }
+.spinner-result .micro { color: var(--teal); display: block; margin-bottom: 10px; }
+.spinner-prompt-text { color: var(--deep); font-family: var(--serif); font-size: 22px; font-weight: 400; line-height: 1.15; margin: 0 0 16px; }
+.spinner-response { border: 1px solid var(--line-dark); color: var(--ink); font-family: var(--sans); font-size: 13px; line-height: 1.55; padding: 12px; resize: vertical; width: 100%; }
+
+/* ── Strategy quiz ────────────────────────────────────────────────────── */
+.strategy-quiz-card { background: var(--white); border: 1px solid var(--line); padding: 28px; }
+.sq-scenario-label { color: var(--coral); font-family: var(--mono); font-size: 9px; letter-spacing: .1em; margin: 0 0 8px; text-transform: uppercase; }
+.sq-scenario { color: var(--deep); font-size: 16px; line-height: 1.6; margin: 0 0 22px; max-width: 640px; }
+.sq-options { display: grid; gap: 9px; margin-bottom: 20px; }
+.sq-option { background: var(--paper-2); border: 1px solid var(--line-dark); color: var(--deep); font-size: 12px; padding: 13px 16px; text-align: left; transition: background .15s, border-color .15s; width: 100%; }
+.sq-option:hover { background: var(--white); border-color: var(--teal); }
+.sq-option.correct { background: var(--mint); border-color: var(--teal); color: var(--deep); }
+.sq-option.wrong { background: var(--coral-soft); border-color: var(--coral); color: var(--deep); }
+.sq-feedback { background: var(--mint-2); border-left: 3px solid var(--teal); font-size: 12px; line-height: 1.55; padding: 14px 16px; }
+.sq-feedback.wrong { background: #fff4f0; border-color: var(--coral); }
+.sq-feedback strong { color: var(--deep); display: block; font-size: 13px; margin-bottom: 4px; }
+.sq-explanation { color: var(--ink-soft); font-size: 11px; line-height: 1.55; margin: 8px 0 0; }
+.quiz-done { align-items: center; display: flex; flex-direction: column; gap: 16px; padding: 60px 20px; text-align: center; }
+.quiz-done-score { color: var(--coral); font-family: var(--serif); font-size: 96px; font-weight: 400; letter-spacing: -.06em; line-height: 1; }
+.quiz-done-score span { color: var(--ink-soft); font-size: 48px; }
+.quiz-done-label { color: var(--ink-soft); font-size: 14px; margin: 0; }
+
 /* ── Responsive new components ────────────────────────────────────────── */
+@media (max-width: 930px) {
+  .games-grid { grid-template-columns: repeat(2, 1fr); }
+  .memory-grid { grid-template-columns: repeat(4, 1fr); }
+}
 @media (max-width: 680px) {
   .overlay-panel { padding: 22px 18px 20px; }
   .overlay-heading { font-size: 28px; }
@@ -566,4 +654,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   .playlist-grid { grid-template-columns: 1fr 1fr; }
   .video-workspace-header { flex-direction: column; align-items: flex-start; }
   .video-checkpoint-status { margin-left: 0; }
+  .games-grid { grid-template-columns: 1fr; }
+  .memory-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .mem-card { height: 80px; }
+  .mem-card-back p { font-size: 9px; }
+  .spinner-wrap, .spinner-wheel { width: 200px; height: 200px; }
+  .spinner-segment { border-width: 100px 0 100px 200px; transform-origin: 200px 100px; }
+  .notes-textarea { min-height: 320px; }
 }
