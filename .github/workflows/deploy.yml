@@ -35,8 +35,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Build project
-        run: pnpm run build
+      - name: Build client application
+        run: pnpm --filter @workspace/client build || pnpm run build --filter @workspace/client || pnpm run build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
