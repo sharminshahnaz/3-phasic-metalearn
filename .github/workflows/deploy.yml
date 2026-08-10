@@ -36,12 +36,18 @@ jobs:
         run: pnpm install --no-frozen-lockfile
 
       - name: Build client application
-        run: pnpm --filter @workspace/client build
+        run: pnpm --filter @workspace/client build || pnpm run build
 
-      - name: Prepare artifact
+      - name: Copy build output
         run: |
           mkdir -p ./public_dist
-          cp -r $(find . -name "index.html" -path "*/dist/*" | head -n 1 | xargs dirname)/* ./public_dist/
+          if [ -d "./artifacts/3-phasic-metalearn/dist" ]; then
+            cp -r ./artifacts/3-phasic-metalearn/dist/* ./public_dist/
+          elif [ -d "./artifacts/client/dist" ]; then
+            cp -r ./artifacts/client/dist/* ./public_dist/
+          elif [ -d "./dist" ]; then
+            cp -r ./dist/* ./public_dist/
+          fi
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
