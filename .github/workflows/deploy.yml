@@ -38,10 +38,10 @@ jobs:
       - name: Build client application
         run: pnpm --filter @workspace/client build || pnpm run build --filter @workspace/client || pnpm run build
 
-      - name: Upload artifact
+      - name: Locate and upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "./dist"
+          path: "./artifacts/3-phasic-metalearn/dist"
 
   deploy:
     environment:
