@@ -38,10 +38,17 @@ jobs:
       - name: Build client application
         run: pnpm --filter @workspace/client build || pnpm run build --filter @workspace/client || pnpm run build
 
-      - name: Locate and upload artifact
+      - name: Auto-locate build output
+        run: |
+          DIST_PATH=$(find . -name "index.html" -path "*/dist/*" | head -n 1 | xargs dirname)
+          echo "Found build output at: $DIST_PATH"
+          mkdir -p ./public_dist
+          cp -r "$DIST_PATH"/* ./public_dist/
+
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "./artifacts/3-phasic-metalearn/dist"
+          path: "./public_dist"
 
   deploy:
     environment:
