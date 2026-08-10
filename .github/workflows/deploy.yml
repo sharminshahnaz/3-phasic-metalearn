@@ -35,8 +35,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Build frontend application
-        run: npx vite build --outDir ./public_dist
+      - name: Build client application
+        run: pnpm --filter @workspace/client build
+
+      - name: Prepare artifact
+        run: |
+          mkdir -p ./public_dist
+          cp -r $(find . -name "index.html" -path "*/dist/*" | head -n 1 | xargs dirname)/* ./public_dist/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
