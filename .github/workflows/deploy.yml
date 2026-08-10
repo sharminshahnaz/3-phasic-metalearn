@@ -38,15 +38,17 @@ jobs:
       - name: Build client application
         run: pnpm --filter @workspace/client build || pnpm run build
 
-      - name: Copy build output
+      - name: Locate and bundle output
         run: |
-          mkdir -p ./public_dist
-          if [ -d "./artifacts/3-phasic-metalearn/dist" ]; then
-            cp -r ./artifacts/3-phasic-metalearn/dist/* ./public_dist/
-          elif [ -d "./artifacts/client/dist" ]; then
-            cp -r ./artifacts/client/dist/* ./public_dist/
-          elif [ -d "./dist" ]; then
-            cp -r ./dist/* ./public_dist/
+          TARGET_DIR=$(find . -type f -name "index.html" | grep "dist" | head -n 1 | xargs dirname)
+          
+          if [ -n "$TARGET_DIR" ] && [ -d "$TARGET_DIR" ]; then
+            echo "Found build output in: $TARGET_DIR"
+            mkdir -p ./public_dist
+            cp -r "$TARGET_DIR"/* ./public_dist/
+          else
+            echo "ERROR: index.html not found in any dist directory!"
+            exit 1
           fi
 
       - name: Upload artifact
