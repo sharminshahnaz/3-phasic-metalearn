@@ -6,6 +6,8 @@ import {
   NotebookPen, Pause, Play, RefreshCw, Send, Sparkles, Star,
   Target, Users, X, Zap,
 } from 'lucide-react';
+import { GROUP_META, QASection } from './curriculum';
+import type { UnitDef } from './curriculum';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 type Lang   = 'en' | 'bn';
@@ -83,8 +85,8 @@ const S = {
     cohortIndex: '02 · cohort',
     cohortEyebrow: 'Choose a study group',
     cohortHeading: 'Where will you begin?',
-    groupCTitle: 'Foundations', groupCDetail: 'Unit I · 42 videos · 3 phases',
-    groupDTitle: 'Applications', groupDDetail: 'Unit I · coming soon',
+    groupCTitle: 'Psychological Perspective in Education', groupCDetail: 'Unit 1 & 2 · 20 marks · Q&A notes included',
+    groupDTitle: 'Historical Development of Indian Education', groupDDetail: 'Unit 1 · 20 marks · Q&A notes included',
     groupIndex: '03 · pathway',
     groupH1a: 'Group C', groupH1b: 'foundations.',
     groupBody: 'A paced entry into educational psychology, with room to pause and make your learning decisions explicit.',
@@ -243,8 +245,8 @@ const S = {
     cohortIndex: '০২ · দল',
     cohortEyebrow: 'একটি অধ্যয়ন গ্রুপ বেছে নিন',
     cohortHeading: 'আপনি কোথা থেকে শুরু করবেন?',
-    groupCTitle: 'ভিত্তি', groupCDetail: 'ইউনিট ১ · ৪২ ভিডিও · ৩ পর্যায়',
-    groupDTitle: 'প্রয়োগ', groupDDetail: 'ইউনিট ১ · শীঘ্রই আসছে',
+    groupCTitle: 'শিক্ষায় মনোবৈজ্ঞানিক দৃষ্টিভঙ্গি', groupCDetail: 'ইউনিট ১ ও ২ · ২০ নম্বর · প্রশ্ন-উত্তর নোট সহ',
+    groupDTitle: 'ভারতীয় শিক্ষার ঐতিহাসিক বিকাশ', groupDDetail: 'ইউনিট ১ · ২০ নম্বর · প্রশ্ন-উত্তর নোট সহ',
     groupIndex: '০৩ · পথ',
     groupH1a: 'গ্রুপ সি', groupH1b: 'ভিত্তি।',
     groupBody: 'শিক্ষামনোবিজ্ঞানে একটি পর্যায়ক্রমিক প্রবেশ।',
@@ -362,7 +364,12 @@ const S = {
     quizRetry: 'আবার চেষ্টা করুন',
   },
 } as const;
-type Strings = typeof S.en;
+type Widen<T> = T extends string ? string
+  : T extends (...a: infer A) => infer R ? (...a: A) => Widen<R>
+  : T extends readonly (infer U)[] ? readonly Widen<U>[]
+  : T extends object ? { [K in keyof T]: Widen<T[K]> }
+  : T;
+type Strings = Widen<typeof S.en>;
 
 // ── Quotes ────────────────────────────────────────────────────────────────
 const QUOTES_EN = [
@@ -898,10 +905,13 @@ function PhaseVideoWorkspace({ phase, onToast }: { phase: Phase; onToast: (m: st
 }
 
 // ── Lesson workspace ───────────────────────────────────────────────────────
-function LessonWorkspace({ onBack, onToast }: { onBack: () => void; onToast: (m: string) => void }) {
+function LessonWorkspace({ unit, onBack, onToast }: { unit: UnitDef; onBack: () => void; onToast: (m: string) => void }) {
   const { lang } = useLang();
   const { role } = useRole();
   const t: Strings = S[lang];
+  const groupName = lang === 'en' ? `Group ${unit.group}` : `গ্রুপ ${unit.group === 'C' ? 'সি' : 'ডি'}`;
+  const unitName = lang === 'en' ? `Unit ${unit.unitNo}` : `ইউনিট ${unit.unitNo === 1 ? '১' : '২'}`;
+  const lessonEyebrow = `${groupName} · ${unitName} · ${lang === 'en' ? unit.titleEn : unit.titleBn}`;
   const [phase, setPhase] = useState<Phase>('immersion');
   const phases: Phase[] = ['immersion', 'transition', 'genesis'];
   const phaseSubs = [t.phaseSub1, t.phaseSub2, t.phaseSub3];
@@ -911,7 +921,7 @@ function LessonWorkspace({ onBack, onToast }: { onBack: () => void; onToast: (m:
       <div className="lesson-header">
         <div>
           <button className="back-button" onClick={onBack}><ArrowLeft size={14} /> {t.bcUnit}</button>
-          <span className="eyebrow" style={{ marginTop: 22 }}>{t.lessonEyebrow}</span>
+          <span className="eyebrow" style={{ marginTop: 22 }}>{lessonEyebrow}</span>
           <h1>{t.lessonH1.split('\n').map((l, i) => <span key={i}>{l}{i === 0 && <br />}</span>)}</h1>
           <p>{t.lessonBody}</p>
         </div>
@@ -1441,7 +1451,7 @@ function Sidebar({ view, onView }: { view: StudentView; onView: (v: StudentView)
       </nav>
       <div className="sidebar-footer">
         <span className="micro">{t.sidebarFooterLabel}</span>
-        <p>Group C · Unit I<br />42 videos · 3 phases</p>
+        <p>{lang === 'en' ? <>Group C · Unit 1 &amp; 2<br />Group D · Unit 1</> : <>গ্রুপ সি · ইউনিট ১ ও ২<br />গ্রুপ ডি · ইউনিট ১</>}</p>
       </div>
     </aside>
   );
@@ -1499,53 +1509,67 @@ function SubjectView({ onGroup }: { onGroup: (g: 'C' | 'D') => void }) {
   );
 }
 
-function GroupView({ onUnit, onBack }: { onUnit: () => void; onBack: () => void }) {
+function GroupView({ group, onUnit, onBack }: { group: 'C' | 'D'; onUnit: (u: UnitDef) => void; onBack: () => void }) {
   const { lang } = useLang();
   const t: Strings = S[lang];
+  const meta = GROUP_META[group];
+  const groupName = lang === 'en' ? `Group ${group}` : `গ্রুপ ${group === 'C' ? 'সি' : 'ডি'}`;
   return (
     <>
-      <div className="breadcrumb"><button onClick={onBack}>{t.bcSubject}</button><ChevronRight size={12} /><span>{t.bcGroupC}</span></div>
+      <div className="breadcrumb"><button onClick={onBack}>{t.bcSubject}</button><ChevronRight size={12} /><span>{groupName}</span></div>
       <div className="page-heading">
-        <div><span className="section-index">{t.groupIndex}</span><h1>{t.groupH1a}<br />{t.groupH1b}</h1></div>
-        <p>{t.groupBody}</p>
+        <div><span className="section-index">{t.groupIndex}</span><h1>{groupName}.</h1></div>
+        <p>{lang === 'en' ? meta.titleEn : meta.titleBn}</p>
       </div>
       <div className="unit-view">
         <section className="unit-rail">
-          <span className="eyebrow" style={{ color: '#a9d7cb' }}>{t.groupRailEyebrow}</span>
-          <h2>{t.groupRailH2a}<br />{t.groupRailH2b}</h2>
+          <span className="eyebrow" style={{ color: '#a9d7cb' }}>{groupName} · {lang === 'en' ? 'curriculum' : 'পাঠ্যক্রম'}</span>
+          <h2>{lang === 'en' ? meta.titleEn : meta.titleBn}</h2>
           <p>{t.groupRailBody}</p>
-          <div className="contact-hours">{t.groupContactHours}</div>
+          <div className="contact-hours">
+            {lang === 'en'
+              ? `${meta.units.length} unit${meta.units.length > 1 ? 's' : ''} · ${meta.marks} marks`
+              : `${meta.units.length === 1 ? '১টি ইউনিট' : '২টি ইউনিট'} · ২০ নম্বর`}
+          </div>
         </section>
         <section className="lesson-list">
-          <button className="lesson-row" onClick={onUnit} data-testid="button-open-unit">
-            <span className="lesson-number">UNIT I</span>
-            <span><h3>{t.unitRowTitle}</h3><p>{t.unitRowDetail}</p></span>
-            <ChevronRight size={18} />
-          </button>
+          {meta.units.map(u => (
+            <button className="lesson-row" key={u.id} onClick={() => onUnit(u)} data-testid={`button-open-unit-${u.id}`}>
+              <span className="lesson-number">{lang === 'en' ? `UNIT ${u.unitNo}` : `ইউনিট ${u.unitNo === 1 ? '১' : '২'}`}</span>
+              <span>
+                <h3>{lang === 'en' ? u.titleEn : u.titleBn}</h3>
+                <p>{lang === 'en'
+                  ? `${u.questions.filter(q => q.marks === 2).length} short + ${u.questions.filter(q => q.marks > 2).length} long Q&A · study notes in Bengali`
+                  : `${u.questions.filter(q => q.marks === 2).length}টি সংক্ষিপ্ত + ${u.questions.filter(q => q.marks > 2).length}টি রচনাধর্মী প্রশ্ন-উত্তর`}</p>
+              </span>
+              <ChevronRight size={18} />
+            </button>
+          ))}
         </section>
       </div>
     </>
   );
 }
 
-function UnitView({ onLesson, onBack }: { onLesson: () => void; onBack: () => void }) {
+function UnitView({ unit, onLesson, onBack }: { unit: UnitDef; onLesson: () => void; onBack: () => void }) {
   const { lang } = useLang();
   const { role } = useRole();
   const t: Strings = S[lang];
   const phases: Phase[] = ['immersion', 'transition', 'genesis'];
+  const groupName = lang === 'en' ? `Group ${unit.group}` : `গ্রুপ ${unit.group === 'C' ? 'সি' : 'ডি'}`;
   return (
     <>
-      <div className="breadcrumb"><button onClick={onBack}>{t.bcGroupC}</button><ChevronRight size={12} /><span>{t.bcUnit}</span></div>
+      <div className="breadcrumb"><button onClick={onBack}>{groupName}</button><ChevronRight size={12} /><span>{lang === 'en' ? `Unit ${unit.unitNo}` : `ইউনিট ${unit.unitNo === 1 ? '১' : '২'}`}</span></div>
       <div className="page-heading">
-        <div><span className="section-index">{t.unitIndex}</span><h1>{t.unitH1a}<br />{t.unitH1b}</h1></div>
-        <p>{t.unitBody}</p>
+        <div><span className="section-index">{t.unitIndex}</span><h1>{lang === 'en' ? unit.titleEn : unit.titleBn}</h1></div>
+        <p>{lang === 'en' ? unit.syllabusEn : unit.syllabusBn}</p>
       </div>
       <div className="unit-view">
         <section className="unit-rail">
-          <span className="eyebrow" style={{ color: '#a9d7cb' }}>{t.unitRailEyebrow}</span>
+          <span className="eyebrow" style={{ color: '#a9d7cb' }}>{lang === 'en' ? `Unit ${unit.unitNo}` : `ইউনিট ${unit.unitNo === 1 ? '১' : '২'}`}</span>
           <h2>{t.unitRailH2.split('\n').map((l, i) => <span key={i}>{l}{i === 0 && <br />}</span>)}</h2>
           <p>{t.unitRailBody}</p>
-          <div className="contact-hours">{t.unitContactHours}</div>
+          <div className="contact-hours">{groupName} · {lang === 'en' ? 'automated checkpoints' : 'স্বয়ংক্রিয় চেকপয়েন্ট'}</div>
         </section>
         <section className="lesson-list">
           {phases.map((ph, i) => (
@@ -1560,6 +1584,7 @@ function UnitView({ onLesson, onBack }: { onLesson: () => void; onBack: () => vo
           ))}
         </section>
       </div>
+      <QASection unit={unit} lang={lang} />
     </>
   );
 }
@@ -1567,15 +1592,18 @@ function UnitView({ onLesson, onBack }: { onLesson: () => void; onBack: () => vo
 // ── Student app ────────────────────────────────────────────────────────────
 function StudentApp({ onHome, onAdmin }: { onHome: () => void; onAdmin: () => void }) {
   const [view, setView] = useState<StudentView>('subject');
+  const [group, setGroup] = useState<'C' | 'D'>('C');
+  const [unit, setUnit] = useState<UnitDef>(GROUP_META.C.units[0]);
   const [toast, setToast] = useState('');
   useEffect(() => { if (!toast) return; const ti = setTimeout(() => setToast(''), 3200); return () => clearTimeout(ti); }, [toast]);
   return (
     <>
       <StudentShell onHome={onHome} onAdmin={onAdmin} view={view} onView={setView}>
-        {view === 'subject' && <SubjectView onGroup={() => setView('group')} />}
-        {view === 'group'   && <GroupView onUnit={() => setView('unit')} onBack={() => setView('subject')} />}
-        {view === 'unit'    && <UnitView onLesson={() => setView('lesson')} onBack={() => setView('group')} />}
-        {view === 'lesson'  && <LessonWorkspace onBack={() => setView('unit')} onToast={setToast} />}
+        {view === 'subject' && <SubjectView onGroup={g => { setGroup(g); setUnit(GROUP_META[g].units[0]); setView('group'); }} />}
+        {view === 'group'   && <GroupView group={group} onUnit={u => { setUnit(u); setView('unit'); }} onBack={() => setView('subject')} />}
+        {/* unit/lesson views always show the unit chosen within the current group */}
+        {view === 'unit'    && <UnitView unit={unit} onLesson={() => setView('lesson')} onBack={() => setView('group')} />}
+        {view === 'lesson'  && <LessonWorkspace unit={unit} onBack={() => setView('unit')} onToast={setToast} />}
         {view === 'notes'   && <NotesSection />}
         {view === 'games'   && <GamesSection />}
       </StudentShell>
