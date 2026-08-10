@@ -35,15 +35,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Build client application
-        run: pnpm --filter @workspace/client build || pnpm run build --filter @workspace/client || pnpm run build
-
-      - name: Auto-locate build output
-        run: |
-          DIST_PATH=$(find . -name "index.html" -path "*/dist/*" | head -n 1 | xargs dirname)
-          echo "Found build output at: $DIST_PATH"
-          mkdir -p ./public_dist
-          cp -r "$DIST_PATH"/* ./public_dist/
+      - name: Build frontend application
+        run: npx vite build --outDir ./public_dist
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
